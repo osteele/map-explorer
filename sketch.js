@@ -1,17 +1,19 @@
-let inputSlider, inLow, inHigh, outLow, outHigh;
-let sliders = [];
+let inputControl, inLowControl, inHighControl, outLowControl, outHighControl;
+let controls = [];
 let coachMarkIndex = 0;
 let dragging = null;
 let clampCheckbox;
 
+const bgColor = "#343741";
 const inRangeColor = '#8ca7f8';
 const outRangeColor = '#76CBA6';
 const inValueColor = '#875A86';
 const outValueColor = '#CC0';
 
-const textY = 60;
-const line1y = 160;
-const line2y = 350;
+const codeLine1y = 25;
+const codeLine2y = 60;
+const inputRangeY = 160;
+const outputRangeY = 350;
 
 const presets = [
 	[0, 100, 0, 100],
@@ -32,6 +34,7 @@ const frameworks = {
 	'Processing': {varDef: 'float'},
 	'p5.js': {varDef: 'let', hasClamp: true},
 };
+let frameworkName = P5JS_FRAMEWORK;
 
 const referenceUrls = [
 	['https://www.arduino.cc/reference/en/language/functions/math/map/', 'Arduino reference'],
@@ -39,91 +42,112 @@ const referenceUrls = [
 	['https://p5js.org/reference/#/p5/map', 'p5.js reference']
 ];
 
-let frameworkName = P5JS_FRAMEWORK;
+// Convert between program values and canvas X values.
+// This doesn't use `scale` and `translate`, because we only want
+// to transform the x positions, not the widths of text and shapes.
 let xAdd = 0;
 let xScale = 4;
 
-if (window.location.hash === '#arduino') {
-	framework = ARDUINO_FRAMEWORK;
-}
+const toCanvasX = x => xAdd + x * xScale;
+const fromCanvasX = (xAdd) => (mouseX - xAdd) / xScale;
 
 function setup() {
   createCanvas(windowWidth, 600);
-  inputSlider = new Slider(15, line1y, inValueColor, "input");
-  inLow = new Slider(10, line1y, inRangeColor, "input low");
-  inHigh = new Slider(40, line1y, inRangeColor, "input high");
-  outLow = new Slider(100, line2y, outRangeColor, "output low");
-  outHigh = new Slider(200, line2y, outRangeColor, "output high");
+  createSliders();
 
-	createDiv('Framework').position(10, height - 80).style('color', 'white');
-  let frameworkSel = createSelect().position(10, height - 55);
-	Object.keys(frameworks).forEach(s => frameworkSel.option(s));
-  frameworkSel.selected(P5JS_FRAMEWORK);
-  frameworkSel.changed(() => {
-	  frameworkName = frameworkSel.value();
-		let {hasClamp} = frameworks[frameworkName];
-    if (hasClamp) clampCheckbox.show();
-    else clampCheckbox.hide();
-  });
+	createFrameworkSelector();
 
   clampCheckbox = createCheckbox('clamp', false);
-  clampCheckbox.position(150, height - 55)
+  clampCheckbox.position(150, height - 55);
   clampCheckbox.style('color', 'white');
+  clampCheckbox.attribute('title', 'Clamp the output between low and high');
 
-	{
-		let x = width - 300;
-		let y = 20;
-		createDiv('Presets').position(x, y).style('color', 'white');
-		presets.forEach((preset, i) => {
-			y += 20;
-			if (i === floor(presets.length / 2)) {
-				x += 150;
-				y = 20;
-			}
-			let [s1, e1, s2, e2] = preset;
-			let button = createButton(`${s1}, ${e1} → ${s2}, ${e2}`).position(x, y);
-			button.mousePressed(() => {
-				[inLow, inHigh, outLow, outHigh].forEach((slider, i) => slider.value = preset[i]);
-				inputSlider.value = constrain(inputSlider.value, s1, e1);
-			});
-		});
-	}
-	{
-		let y = height - 70;
-		let maxWidth = max(referenceUrls.map(([_, title]) => textWidth(title)));
-		for (let [href, title] of referenceUrls) {
-			createA(href, title, 'map-reference').position(width - 40 - maxWidth, y).style('color', 'gray');
-			y += 20;
-		}
-	}
+	createPresets();
+	createReferenceLinks();
+}
+
+function createFrameworkSelector() {
+  createDiv('Framework').position(10, height - 80).style('color', 'white');
+  let frameworkSel = createSelect().position(10, height - 55);
+  Object.keys(frameworks).forEach(s => frameworkSel.option(s));
+  frameworkSel.selected(P5JS_FRAMEWORK);
+  frameworkSel.changed(() => {
+    frameworkName = frameworkSel.value();
+    let { hasClamp } = frameworks[frameworkName];
+    if (hasClamp)
+      clampCheckbox.show();
+    else
+      clampCheckbox.hide();
+  });
+}
+
+function createSliders() {
+  inputControl = new Controller(15, inputRangeY, inValueColor, "input");
+  inLowControl = new Controller(10, inputRangeY, inRangeColor, "input low");
+  inHighControl = new Controller(40, inputRangeY, inRangeColor, "input high");
+  outLowControl = new Controller(100, outputRangeY, outRangeColor, "output low");
+  outHighControl = new Controller(200, outputRangeY, outRangeColor, "output high");
+}
+
+function createReferenceLinks() {
+  let y = height - 70;
+  let maxWidth = max(referenceUrls.map(([_, title]) => textWidth(title)));
+  for (let [href, title] of referenceUrls) {
+    createA(href, title, 'map-reference').position(width - 40 - maxWidth, y).style('color', 'gray');
+    y += 20;
+  }
+}
+
+function createPresets() {
+  let x = width - 300;
+  let y = 20;
+  createDiv('Presets').position(x, y).style('color', 'white');
+  presets.forEach((preset, i) => {
+    y += 20;
+    if (i === floor(presets.length / 2)) {
+      x += 150;
+      y = 20;
+    }
+    let [s1, e1, s2, e2] = preset;
+    let button = createButton(`${s1}, ${e1} → ${s2}, ${e2}`).position(x, y);
+    button.mousePressed(() => {
+      [inLowControl, inHighControl, outLowControl, outHighControl].forEach((slider, i) => slider.value = preset[i]);
+      inputControl.value = constrain(inputControl.value, s1, e1);
+    });
+  });
 }
 
 function draw() {
-  background('#343741');
+  background(bgColor);
 
   let {varDef: declarator, hasClamp} = frameworks[frameworkName];
-  let clamp = hasClamp && clampCheckbox.checked() || false;
-	let maybeFloor = declarator === 'int' ? floor : (x) => x;
-  let x = maybeFloor(inputSlider.value);
-  let y = maybeFloor(map(x, inLow.value, inHigh.value, outLow.value, outHigh.value, clamp));
+  let clamp = Boolean(hasClamp && clampCheckbox.checked());
+  let maybeFloor = declarator === 'int' ? floor : (x) => x;
+
+  const inLow = maybeFloor(inLowControl.value);
+  const inHigh = maybeFloor(inHighControl.value);
+  const outLow = maybeFloor(outLowControl.value);
+  const outHigh = maybeFloor(outHighControl.value);
+  const x = maybeFloor(inputControl.value);
+  const y = maybeFloor(map(x, inLow, inHigh, outLow, outHigh, clamp));
 
   if (true) {
-    let xs = [
+    const xs = [
       x, y,
-      inLow.value, inHigh.value,
-      outLow.value, outHigh.value
+      inLow, inHigh,
+      outLow, outHigh
     ];
-    let xMin = min(xs);
-    let xMax = max(xs);
+    const xMin = min(xs);
+    const xMax = max(xs);
 		const margin = 30;
 		function interp(s0, t) {
-			let s1 = lerp(s0, t, 0.1);
+			const s1 = lerp(s0, t, 0.1);
 			return abs(s1 - s0) < 2 ? lerp(s0, t, 0.2) : s1;
 		}
-    if (xAdd + xMin * xScale < margin || (!dragging && xAdd + xMin * xScale > 2 * margin)) {
+    if (toCanvasX(xMin) < margin || (!dragging && toCanvasX(xMin) > 2 * margin)) {
       xAdd = interp(xAdd, margin - xMin * xScale);
     }
-    if (xAdd + xMax * xScale > width - margin || (!dragging && xAdd + xMax * xScale < width - 4 * margin)) {
+    if (toCanvasX(xMax) > width - margin || (!dragging && toCanvasX(xMax) < width - 4 * margin)) {
       xScale = interp(xScale, (width - margin - xAdd) / xMax);
     }
   }
@@ -135,104 +159,103 @@ function draw() {
   textSize(30);
   textFont('Courier');
   fill('#ccc');
-  let codeSpans = [
+  const codeSpans = [
     `${declarator} output = map(`,
 		`input, `,
-    `${formatNumber(inLow.value)}, ${formatNumber(inHigh.value)}`,
+    `${formatNumber(inLow)}, ${formatNumber(inHigh)}`,
     ', ',
-    `${formatNumber(outLow.value)}, ${formatNumber(outHigh.value)}`,
+    `${formatNumber(outLow)}, ${formatNumber(outHigh)}`,
     (clamp ? ", true" : "") + ');'
   ]
-  let codeSpanWidths = codeSpans.map(s => textWidth(s));
-	let inValueLeft = codeSpanWidths[0] + 10;
-  let inTextLeft = inValueLeft + codeSpanWidths[1];
-  let inTextRight = inTextLeft + codeSpanWidths[2];
-  let outTextLeft = inTextRight + codeSpanWidths[3];
-  let outTextRight = outTextLeft + codeSpanWidths[4];
-	const textLine1y = 25;
-  text(`${declarator} input = ${formatNumber(x)};`, 10, textLine1y);
-  text(codeSpans.join(''), 10, textY);
+  const codeSpanWidths = codeSpans.map(s => textWidth(s));
+	const inValueLeft = codeSpanWidths[0] + 10;
+  const inTextLeft = inValueLeft + codeSpanWidths[1];
+  const inTextRight = inTextLeft + codeSpanWidths[2];
+  const outTextLeft = inTextRight + codeSpanWidths[3];
+  const outTextRight = outTextLeft + codeSpanWidths[4];
+  text(`${declarator} input = ${formatNumber(x)};`, 10, codeLine1y);
+  text(codeSpans.join(''), 10, codeLine2y);
 	fill(outValueColor);
-	text("output",  10 + textWidth(`${declarator} `), textY);
+	text("output",  10 + textWidth(`${declarator} `), codeLine2y);
   fill(inValueColor);
-  text("input", 10 + textWidth(`${declarator} `), textLine1y);
-  text("input", inValueLeft, textY);
+  text("input", 10 + textWidth(`${declarator} `), codeLine1y);
+  text("input", inValueLeft, codeLine2y);
   fill(inRangeColor);
-  text(codeSpans[2], inTextLeft, textY);
+  text(codeSpans[2], inTextLeft, codeLine2y);
   fill(outRangeColor);
-  text(codeSpans[4], outTextLeft, textY);
+  text(codeSpans[4], outTextLeft, codeLine2y);
 
   textAlign(CENTER);
 
   // lines from inLow-outLow, inHigh-outHigh, input-output
   strokeWeight(4);
   stroke('#575A66');
-  line(inLow.x, inLow.y, outLow.x, outLow.y);
-  line(inHigh.x, inHigh.y, outHigh.x, outHigh.y);
+  line(inLowControl.x, inLowControl.y, outLowControl.x, outLowControl.y);
+  line(inHighControl.x, inHighControl.y, outHighControl.x, outHighControl.y);
   stroke('white');
-  line(xAdd + x * xScale, line1y, xAdd + y * xScale, line2y);
+  line(toCanvasX(x), inputRangeY, toCanvasX(y), outputRangeY);
 
   // input range lines and labels
   textSize(15);
   stroke(inRangeColor);
   fill(inRangeColor);
   strokeWeight(4);
-  line(inTextLeft, textY + 10, inTextRight, textY + 10)
+  line(inTextLeft, codeLine2y + 10, inTextRight, codeLine2y + 10)
   strokeWeight(8);
-  line(inLow.x, inLow.y, inHigh.x, inHigh.y);
+  line(inLowControl.x, inLowControl.y, inHighControl.x, inHighControl.y);
   strokeWeight(0);
-  text(formatNumber(inLow.value), inLow.x, inLow.y - 10);
-  text(formatNumber(inHigh.value), inHigh.x, inHigh.y - 10);
+  text(formatNumber(inLow), inLowControl.x, inLowControl.y - 10);
+  text(formatNumber(inHigh), inHighControl.x, inHighControl.y - 10);
 
   // line from 'x' to the dot on the input bar
   stroke(inValueColor);
   strokeWeight(2);
-  line(inValueLeft + 8, textY + 10, xAdd + x * xScale, line1y);
+  line(inValueLeft + 8, codeLine2y + 10, toCanvasX(x), inputRangeY);
 
   // output range lines and labels
   stroke(outRangeColor);
   fill(outRangeColor);
   strokeWeight(4);
-  line(outTextLeft, textY + 10, outTextRight, textY + 10)
+  line(outTextLeft, codeLine2y + 10, outTextRight, codeLine2y + 10)
   strokeWeight(8);
   strokeCap(SQUARE);
-  line(outLow.x, outLow.y, outHigh.x, outHigh.y);
+  line(outLowControl.x, outLowControl.y, outHighControl.x, outHighControl.y);
   strokeWeight(0);
-  text(formatNumber(outLow.value), outLow.x, outLow.y - 10);
-  text(formatNumber(outHigh.value), outHigh.x, outHigh.y - 10);
+  text(formatNumber(outLow), outLowControl.x, outLowControl.y - 10);
+  text(formatNumber(outHigh), outHighControl.x, outHighControl.y - 10);
 
   // line from output value to label
 	fill(outValueColor);
 	stroke(outValueColor);
   strokeWeight(2);
-  line(xAdd + y * xScale, line2y, xAdd + y * xScale, 400);
+  line(toCanvasX(y), outputRangeY, toCanvasX(y), 400);
   textSize(30);
-  text(formatNumber(y), xAdd + y * xScale, 430);
+  text(formatNumber(y), toCanvasX(y), 430);
 
-	let coachSlider = sliders.find(slider => slider.containsMouse()) || coachMarkIndex >= 0 && sliders[coachMarkIndex];
-  for (let slider of sliders) {
-    let [r, g, b] = slider.color.levels;
-    let alpha = slider.containsMouse() || slider === dragging ? 255 : 100;
+	const coachSlider = controls.find(slider => slider.containsMouse()) || coachMarkIndex >= 0 && controls[coachMarkIndex];
+  for (const slider of controls) {
+    const [r, g, b] = slider.color.levels;
+    const alpha = slider.containsMouse() || slider === dragging ? 255 : 100;
     fill(r, g, b, alpha);
     noStroke();
     circle(slider.x, slider.y, 20);
   }
 	if (coachSlider && !dragging) {
-		let slider = coachSlider;
-		let label = `Drag this circle to change\nthe ${slider.label} value`;
+		const slider = coachSlider;
+		const label = `Drag this circle to change\nthe ${slider.label} value`;
 		const c = '#fcc';
 		textFont('Times');
 		textSize(18);
 		fill(c);
-		let w = max(label.split('\n').map(s => textWidth(s)));
-		let x = min(slider.x - 8, width - 20 - w);
+		const w = max(label.split('\n').map(s => textWidth(s)));
+		const x = min(slider.x - 8, width - 20 - w);
 		textAlign(LEFT);
 		text(label, x, slider.y - 45);
 		stroke(c);
 		noFill();
     circle(slider.x, slider.y, 25);
 		if (frameCount % 100 === 0) {
-			coachMarkIndex = (coachMarkIndex + 1) % sliders.length;
+			coachMarkIndex = (coachMarkIndex + 1) % controls.length;
 		}
 	}
 
@@ -244,7 +267,7 @@ const formatNumber = n => String(n).replace(/(\.\d{2})\d+/, '$1');
 function mousePressed() {
   dragging = null;
 	coachMarkIndex = -1;
-  for (let slider of sliders) {
+  for (const slider of controls) {
     if (slider.containsMouse()) {
       dragging = slider;
       break;
@@ -254,7 +277,7 @@ function mousePressed() {
 
 function mouseDragged() {
   if (dragging) {
-    dragging.value = (mouseX - xAdd) / xScale;
+    dragging.value = fromCanvasX(xAdd);
   }
 }
 
@@ -262,29 +285,17 @@ function mouseReleased() {
   dragging = null;
 }
 
-class Slider {
+class Controller {
   constructor(value, y, c, label) {
-    this.v = value;
+    this.value = value;
     this.y = y;
     this.color = color(c);
-		this.label = label;
-    sliders.push(this);
+    this.label = label;
+    controls.push(this);
   }
 
-	get value() {
-		let v = this.v;
-		if (frameworkName === ARDUINO_FRAMEWORK) {
-			v = floor(v);
-		}
-		return v;
-	}
-
-	set value (v) {
-		this.v = v;
-	}
-
   get x() {
-    return xAdd + this.value * xScale;
+    return toCanvasX(this.value);
   }
 
   containsMouse() {
