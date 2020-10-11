@@ -10,10 +10,11 @@ const outRangeColor = '#76CBA6';
 const inValueColor = '#875A86';
 const outValueColor = '#CC0';
 
-const codeLine1y = 25;
-const codeLine2y = 60;
-const inputRangeY = 160;
-const outputRangeY = 350;
+const codeLine1y = 40;
+const codeLine2y = 82;
+const inputRangeY = 200;
+const outputRangeY = 420;
+const outputLabelY = 500;
 
 const presets = [
 	[0, 100, 0, 100],
@@ -58,7 +59,7 @@ function setup() {
 	createFrameworkSelector();
 
   clampCheckbox = createCheckbox('clamp', false);
-  clampCheckbox.position(150, height - 55);
+  clampCheckbox.position(180, height - 35);
   clampCheckbox.style('color', 'white');
   clampCheckbox.attribute('title', 'Clamp the output between low and high');
 
@@ -67,8 +68,11 @@ function setup() {
 }
 
 function createFrameworkSelector() {
-  createDiv('Framework').position(10, height - 80).style('color', 'white');
-  let frameworkSel = createSelect().position(10, height - 55);
+  createDiv("Framework")
+    .position(10, height - 75)
+    .style("color", "white")
+    .style("font-size", "26px");
+  let frameworkSel = createSelect().position(10, height - 35);
   Object.keys(frameworks).forEach(s => frameworkSel.option(s));
   frameworkSel.selected(P5JS_FRAMEWORK);
   frameworkSel.changed(() => {
@@ -228,9 +232,9 @@ function draw() {
 	fill(outValueColor);
 	stroke(outValueColor);
   strokeWeight(2);
-  line(toCanvasX(y), outputRangeY, toCanvasX(y), 400);
+  line(toCanvasX(y), outputRangeY, toCanvasX(y), outputLabelY - 30);
   textSize(30);
-  text(formatNumber(y), toCanvasX(y), 430);
+  text(formatNumber(y), toCanvasX(y), outputLabelY);
 
 	const coachSlider = controls.find(slider => slider.containsMouse()) || coachMarkIndex >= 0 && controls[coachMarkIndex];
   for (const slider of controls) {
