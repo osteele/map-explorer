@@ -168,7 +168,11 @@ function draw() {
   const x = toTargetType(inputControl.value);
   const y = toTargetType(map(x, inLow, inHigh, outLow, outHigh, clamp));
 
-  updateCanvasMapping([x, y, inLow, inHigh, outLow, outHigh]);
+  if (updateCanvasMapping([x, y, inLow, inHigh, outLow, outHigh]) || coachMarkIndex >= 0) {
+    loop();
+  } else {
+    noLoop();
+  }
 
   push();
   translate(translation.x, translation.y);
@@ -322,19 +326,25 @@ function updateCanvasMapping(xs) {
   const xMin = min(xs);
   const xMax = max(xs);
   const margin = 30;
+  let settled = true;
+
   function interp(s0, t) {
     const s1 = lerp(s0, t, 0.1);
     return abs(s1 - s0) < 2 ? lerp(s0, t, 0.2) : s1;
   }
+
   if (toCanvasX(xMin) < margin || (!draggedControl && toCanvasX(xMin) > 2 * margin)) {
     xAdd = interp(xAdd, margin - xMin * xScale);
+    settled = false;
   }
   if (
     toCanvasX(xMax) > width - margin ||
     (!draggedControl && toCanvasX(xMax) < width - 4 * margin)
   ) {
     xScale = interp(xScale, (width - margin - xAdd) / xMax);
+    settled = false;
   }
+  return !settled;
 }
 
 function mousePressed() {
@@ -345,8 +355,11 @@ function mousePressed() {
 function mouseDragged() {
   if (draggedControl) {
     draggedControl.value = fromCanvasX(xAdd + 10);
+    redraw();
   }
 }
+
+function mouseMoved() { redraw(); }
 
 function mouseReleased() {
   draggedControl = null;
