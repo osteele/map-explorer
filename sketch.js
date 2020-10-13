@@ -139,10 +139,11 @@ function createPresets() {
     }
     createButton(`${s1}, ${e1} → ${s2}, ${e2}`).position(x, y)
       .style('background', 'gray')
+      .style('border', 'none')
       .mousePressed(() => {
         controls.forEach((control, i) => (control.value = preset[i]));
-    });
-    inputControl.value = constrain(inputControl.value, s1, e1);
+        inputControl.value = constrain(inputControl.value, s1, e1);
+      });
   });
 }
 
