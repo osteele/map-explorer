@@ -61,7 +61,7 @@ const fromCanvasX = (xAdd) => (mouseX - xAdd) / xScale;
 const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
-  createCanvas(windowWidth, 700);
+  createCanvas(windowWidth, windowHeight - 40);
   createDraggables();
   createFrameworkSelector();
 
@@ -114,7 +114,6 @@ function createDraggables() {
 
 function createReferenceLinks() {
   let y = height - 70;
-  const maxWidth = max(referenceUrls.map(([_, title]) => textWidth(title)));
   for (let [href, title] of referenceUrls) {
     createA(href, title, "map-reference")
       .position(20, y)
