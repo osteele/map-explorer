@@ -11,6 +11,8 @@ const inRangeColor = "#8ca7f8";
 const outValueColor = "#CCCC00";
 const coachMarkTextColor = "#dcc";
 
+const translation = { x: 10, y: 100 };
+
 const codeLine1y = 40;
 const codeLine2y = 82;
 const inputRangeY = 200;
@@ -59,26 +61,29 @@ const fromCanvasX = (xAdd) => (mouseX - xAdd) / xScale;
 const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
-  createCanvas(windowWidth, 600);
+  createCanvas(windowWidth, 700);
   createDraggables();
   createFrameworkSelector();
 
   clampCheckbox = createCheckbox("clamp", false);
   clampCheckbox
-    .position(180, height - 35)
+    .position(180, 50)
     .style("color", "white")
     .attribute("title", "Clamp the output between low and high");
 
   createPresets();
   createReferenceLinks();
+  createA("https://github.com/osteele/map-explorer", "Edit on GitHub")
+    .position(width - 140, height - 30)
+    .style('color', 'gray')
 }
 
 function createFrameworkSelector() {
   createDiv("Framework")
-    .position(10, height - 75)
+    .position(20, 10)
     .style("color", "white")
     .style("font-size", "26px");
-  let frameworkSel = createSelect().position(10, height - 35);
+  let frameworkSel = createSelect().position(20, 50);
   Object.keys(frameworks).forEach((s) => frameworkSel.option(s));
   frameworkSel.selected(P5JS_FRAMEWORK);
   frameworkSel.changed(() => {
@@ -112,7 +117,7 @@ function createReferenceLinks() {
   const maxWidth = max(referenceUrls.map(([_, title]) => textWidth(title)));
   for (let [href, title] of referenceUrls) {
     createA(href, title, "map-reference")
-      .position(width - 40 - maxWidth, y)
+      .position(20, y)
       .style("color", "gray");
     y += 20;
   }
@@ -164,7 +169,7 @@ function draw() {
   updateCanvasMapping([x, y, inLow, inHigh, outLow, outHigh]);
 
   push();
-  translate(10, 0);
+  translate(translation.x, translation.y);
   strokeCap(SQUARE);
 
   textSize(30);
