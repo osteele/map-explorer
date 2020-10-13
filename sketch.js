@@ -1,7 +1,7 @@
 let inputControl, inLowControl, inHighControl, outLowControl, outHighControl;
 let controls = [];
 let coachMarkIndex = 0;
-let dragging = null;
+let draggedControl = null;
 let clampCheckbox;
 
 const bgColor = "#343741";
@@ -60,8 +60,7 @@ const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
   createCanvas(windowWidth, 600);
-  createSliders();
-
+  createDraggables();
   createFrameworkSelector();
 
   clampCheckbox = createCheckbox("clamp", false);
@@ -90,7 +89,7 @@ function createFrameworkSelector() {
   });
 }
 
-function createSliders() {
+function createDraggables() {
   inputControl = new Controller(15, inputRangeY, inValueColor, "input");
   inLowControl = new Controller(10, inputRangeY, inRangeColor, "input low");
   inHighControl = new Controller(40, inputRangeY, inRangeColor, "input high");
@@ -120,25 +119,28 @@ function createReferenceLinks() {
 }
 
 function createPresets() {
+  const controls = [
+    inLowControl,
+    inHighControl,
+    outLowControl,
+    outHighControl,
+  ];
+  const top = 20;
   let x = width - 300;
-  let y = 20;
+  let y = top;
   createDiv("Presets").position(x, y).style("color", "white");
   presets.forEach((preset, i) => {
     const [s1, e1, s2, e2] = preset;
-    y += 20;
+    y += 22;
+    // two columns:
     if (i === floor(presets.length / 2)) {
       x += 150;
-      y = 20;
+      y = top;
     }
-    const button = createButton(`${s1}, ${e1} → ${s2}, ${e2}`).position(x, y);
-    button.mousePressed(() => {
-      const controls = [
-        inLowControl,
-        inHighControl,
-        outLowControl,
-        outHighControl,
-      ];
-      controls.forEach((slider, i) => (slider.value = preset[i]));
+    createButton(`${s1}, ${e1} → ${s2}, ${e2}`).position(x, y)
+      .style('background', 'gray')
+      .mousePressed(() => {
+        controls.forEach((control, i) => (control.value = preset[i]));
     });
     inputControl.value = constrain(inputControl.value, s1, e1);
   });
@@ -158,7 +160,7 @@ function draw() {
   const x = toTargetType(inputControl.value);
   const y = toTargetType(map(x, inLow, inHigh, outLow, outHigh, clamp));
 
-  rescaleValueToCanvas([x, y, inLow, inHigh, outLow, outHigh]);
+  updateCanvasMapping([x, y, inLow, inHigh, outLow, outHigh]);
 
   push();
   translate(10, 0);
@@ -246,42 +248,54 @@ function draw() {
   textSize(30);
   text(formatNumber(y), toCanvasX(y), outputLabelY);
 
-  for (const slider of controls) {
-    const [r, g, b] = slider.color.levels;
-    const alpha = slider.containsMouse() || slider === dragging ? 255 : 100;
+  for (const control of controls) {
+    const [r, g, b] = control.color.levels;
+    const alpha = control.containsMouse() || control === draggedControl ? 255 : 100;
     fill(r, g, b, alpha);
     noStroke();
-    circle(slider.x, slider.y, 20);
+    circle(control.x, control.y, 20);
   }
-  if (!dragging) {
+  if (!draggedControl) {
     drawCoachMarks();
   }
 
   pop();
 }
 
-function drawCoachMarks(coachlider) {
-  const slider =
-    controls.find((slider) => slider.containsMouse()) ||
+function drawCoachMarks() {
+  const control =
+    controls.find((control) => control.containsMouse()) ||
     (coachMarkIndex >= 0 && controls[coachMarkIndex]);
-  if (!slider) return;
-  const label = `Drag this circle to change\nthe ${slider.label} value`;
+  if (!control) return;
+
+  const label = `Drag this circle to change\nthe ${control.label} value`;
+  const w = max(label.split("\n").map((s) => textWidth(s)));
+  const x = min(control.x - 8, width - 20 - w);
+
+  textAlign(LEFT);
   textFont("Times");
   textSize(18);
   fill(coachMarkTextColor);
-  const w = max(label.split("\n").map((s) => textWidth(s)));
-  const x = min(slider.x - 8, width - 20 - w);
-  textAlign(LEFT);
-  text(label, x, slider.y - 45);
-  stroke(coachMarkTextColor);
+  text(label, x, control.y - 45);
+
   noFill();
-  circle(slider.x, slider.y, 25);
+  stroke(coachMarkTextColor);
+  circle(control.x, control.y, 25);
+
   if (frameCount % 100 === 0) {
-    coachMarkIndex = (coachMarkIndex + 1) % controls.length;
+    nextCoachMark();
   }
 }
 
-function rescaleValueToCanvas(xs) {
+function disableCouchMarks() {
+  coachMarkIndex = -1;
+}
+
+function nextCoachMark() {
+  coachMarkIndex = (coachMarkIndex + 1) % controls.length;
+}
+
+function updateCanvasMapping(xs) {
   const xMin = min(xs);
   const xMax = max(xs);
   const margin = 30;
@@ -289,36 +303,30 @@ function rescaleValueToCanvas(xs) {
     const s1 = lerp(s0, t, 0.1);
     return abs(s1 - s0) < 2 ? lerp(s0, t, 0.2) : s1;
   }
-  if (toCanvasX(xMin) < margin || (!dragging && toCanvasX(xMin) > 2 * margin)) {
+  if (toCanvasX(xMin) < margin || (!draggedControl && toCanvasX(xMin) > 2 * margin)) {
     xAdd = interp(xAdd, margin - xMin * xScale);
   }
   if (
     toCanvasX(xMax) > width - margin ||
-    (!dragging && toCanvasX(xMax) < width - 4 * margin)
+    (!draggedControl && toCanvasX(xMax) < width - 4 * margin)
   ) {
     xScale = interp(xScale, (width - margin - xAdd) / xMax);
   }
 }
 
 function mousePressed() {
-  dragging = null;
-  coachMarkIndex = -1;
-  for (const slider of controls) {
-    if (slider.containsMouse()) {
-      dragging = slider;
-      break;
-    }
-  }
+  disableCouchMarks();
+  draggedControl = controls.find(control => control.containsMouse())
 }
 
 function mouseDragged() {
-  if (dragging) {
-    dragging.value = fromCanvasX(xAdd);
+  if (draggedControl) {
+    draggedControl.value = fromCanvasX(xAdd + 10);
   }
 }
 
 function mouseReleased() {
-  dragging = null;
+  draggedControl = null;
 }
 
 class Controller {
@@ -335,6 +343,7 @@ class Controller {
   }
 
   containsMouse() {
-    return (this.x - mouseX + 10) ** 2 + (this.y - mouseY) ** 2 < 100;
+    const radius = 10;
+    return (this.x - mouseX + 10) ** 2 + (this.y - mouseY) ** 2 < radius ** 2;
   }
 }
