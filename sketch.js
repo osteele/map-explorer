@@ -1,6 +1,9 @@
 let inputControl, inLowControl, inHighControl, outLowControl, outHighControl;
 let controls = [];
+
 let coachMarkIndex = 0;
+let prevCoachMarkControl = null;
+
 let draggedControl = null;
 let clampCheckbox;
 
@@ -62,7 +65,7 @@ const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 40);
-  createDraggables();
+  createControllers();
   createFrameworkSelector();
 
   clampCheckbox = createCheckbox("clamp", false);
@@ -94,10 +97,10 @@ function createFrameworkSelector() {
   });
 }
 
-function createDraggables() {
-  inputControl = new Controller(15, inputRangeY, inValueColor, "input");
+function createControllers() {
   inLowControl = new Controller(10, inputRangeY, inRangeColor, "input low");
   inHighControl = new Controller(40, inputRangeY, inRangeColor, "input high");
+  inputControl = new Controller(15, inputRangeY, inValueColor, "input");
   outLowControl = new Controller(
     100,
     outputRangeY,
@@ -268,26 +271,41 @@ function draw() {
 }
 
 function drawCoachMarks() {
-  const control =
-    controls.find((control) => control.containsMouse()) ||
-    (coachMarkIndex >= 0 && controls[coachMarkIndex]);
+  const hovered = controls.find((control) => control.containsMouse());
+  const control = hovered || (coachMarkIndex >= 0 && controls[coachMarkIndex]);
+  if (hovered) { prevCoachMarkControl = null; }
   if (!control) return;
-
-  const label = `Drag this circle to change\nthe ${control.label} value`;
-  const w = max(label.split("\n").map((s) => textWidth(s)));
-  const x = min(control.x - 8, width - 20 - w);
 
   textAlign(LEFT);
   textFont("Times");
   textSize(18);
+
+  const label = `Drag this circle to change\nthe ${control.label} value`;
+  const w = max(label.split("\n").map((s) => textWidth(s)));
+  let x = control.x - translation.x + 15;
+  if (x + w > width - 20) {
+    textAlign(RIGHT);
+    x -= 10
+  }
+
   fill(coachMarkTextColor);
-  text(label, x, control.y - 45);
+  text(label, x, control.y - 58);
 
   noFill();
-  stroke(coachMarkTextColor);
-  circle(control.x, control.y, 25);
+  stroke(coachMarkTextColor); {
+    let { x, y } = control;
+    if (prevCoachMarkControl) {
+      int = min(((frameCount % 100) / 10) ** 2, 1);
+      x = lerp(prevCoachMarkControl.x, x, int);
+      y = lerp(prevCoachMarkControl.y, y, int);
+    }
+    circle(x, y, 25);
+  }
 
-  if (frameCount % 100 === 0) {
+  line(control.x, control.y - 70, control.x, control.y - 10)
+
+  if (!hovered && frameCount % 100 === 0) {
+    prevCoachMarkControl = control;
     nextCoachMark();
   }
 }
