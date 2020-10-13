@@ -350,6 +350,6 @@ class Controller {
 
   containsMouse() {
     const radius = 10;
-    return (this.x - mouseX + 10) ** 2 + (this.y - mouseY) ** 2 < radius ** 2;
+    return (this.x - mouseX + translation.x) ** 2 + (this.y - mouseY + translation.y) ** 2 < radius ** 2;
   }
 }
