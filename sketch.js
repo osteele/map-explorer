@@ -299,12 +299,13 @@ function drawCoachMarks() {
   text(label, x, control.y - 58);
 
   noFill();
-  stroke(coachMarkTextColor); {
+  stroke(coachMarkTextColor);
+  {
     let { x, y } = control;
     if (prevCoachMarkControl) {
-      int = min(((frameCount % 100) / 10) ** 2, 1);
-      x = lerp(prevCoachMarkControl.x, x, int);
-      y = lerp(prevCoachMarkControl.y, y, int);
+      const s = min(((frameCount % 100) / 10) ** 2, 1);
+      x = lerp(prevCoachMarkControl.x, x, s);
+      y = lerp(prevCoachMarkControl.y, y, s);
     }
     circle(x, y, 25);
   }
