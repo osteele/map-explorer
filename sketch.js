@@ -260,9 +260,12 @@ function draw() {
   textSize(30);
   text(formatNumber(y), toCanvasX(y), outputLabelY);
 
+  const currentCoachMark = coachMarkIndex >= 0 ? controls[coachMarkIndex] : null;
   for (const control of controls) {
     const [r, g, b] = control.color.levels;
-    const alpha = control.containsMouse() || control === draggedControl ? 255 : 100;
+    const alpha = control.containsMouse()
+      || control === draggedControl
+      || control === currentCoachMark ? 255 : 100;
     fill(r, g, b, alpha);
     noStroke();
     circle(control.x, control.y, 20);
