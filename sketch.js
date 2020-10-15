@@ -70,7 +70,7 @@ function setup() {
 
   clampCheckbox = createCheckbox("clamp", false);
   clampCheckbox
-    .position(180, 50)
+    .position(180, translation.y + 40)
     .style("color", "white")
     .attribute("title", "Clamp the output between low and high");
 
@@ -83,10 +83,10 @@ function setup() {
 
 function createFrameworkSelector() {
   createDiv("Framework")
-    .position(20, 10)
+    .position(20, translation.y)
     .style("color", "white")
     .style("font-size", "26px");
-  let frameworkSel = createSelect().position(20, 50);
+  let frameworkSel = createSelect().position(20, translation.y + 40);
   Object.keys(frameworks).forEach((s) => frameworkSel.option(s));
   frameworkSel.selected(P5JS_FRAMEWORK);
   frameworkSel.changed(() => {
@@ -132,7 +132,7 @@ function createPresets() {
     outLowControl,
     outHighControl,
   ];
-  const top = 20;
+  const top = translation.y + 10;
   let x = width - 300;
   let y = top;
   createDiv("Presets").position(x, y).style("color", "white");

@@ -2,3 +2,9 @@ body {
   margin: 0;
   background: #343741;
 }
+
+h1 {
+  color: lightgray;
+  text-align: center;
+  font-size: 40px;
+}
