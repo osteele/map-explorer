@@ -1,9 +1,6 @@
 let inputControl, inLowControl, inHighControl, outLowControl, outHighControl;
 let controls = [];
 
-let coachMarkIndex = 0;
-let prevCoachMarkControl = null;
-
 let draggedControl = null;
 let clampCheckbox;
 
@@ -12,7 +9,6 @@ const inValueColor = "#B79CB6"; // lerpColor(color("#875A86"), color("white"), 0
 const outRangeColor = "#76CBA6";
 const inRangeColor = "#8ca7f8";
 const outValueColor = "#CCCC00";
-const coachMarkTextColor = "#dcc";
 
 const translation = { x: 10, y: 100 };
 
@@ -260,7 +256,6 @@ function draw() {
   textSize(30);
   text(formatNumber(y), toCanvasX(y), outputLabelY);
 
-  const currentCoachMark = coachMarkIndex >= 0 ? controls[coachMarkIndex] : null;
   for (const control of controls) {
     const [r, g, b] = control.color.levels;
     const alpha = control.containsMouse()
@@ -275,55 +270,6 @@ function draw() {
   }
 
   pop();
-}
-
-function drawCoachMarks() {
-  const hovered = controls.find((control) => control.containsMouse());
-  const control = hovered || (coachMarkIndex >= 0 && controls[coachMarkIndex]);
-  if (hovered) { prevCoachMarkControl = null; }
-  if (!control) return;
-
-  textAlign(LEFT);
-  textFont("Times");
-  textSize(18);
-
-  const label = `Drag this circle to change\nthe ${control.label} value`;
-  const w = max(label.split("\n").map((s) => textWidth(s)));
-  let x = control.x - translation.x + 15;
-  if (x + w > width - 20) {
-    textAlign(RIGHT);
-    x -= 10
-  }
-
-  fill(coachMarkTextColor);
-  text(label, x, control.y - 58);
-
-  noFill();
-  stroke(coachMarkTextColor);
-  {
-    let { x, y } = control;
-    if (prevCoachMarkControl) {
-      const s = min(((frameCount % 100) / 10) ** 2, 1);
-      x = lerp(prevCoachMarkControl.x, x, s);
-      y = lerp(prevCoachMarkControl.y, y, s);
-    }
-    circle(x, y, 25);
-  }
-
-  line(control.x, control.y - 70, control.x, control.y - 10)
-
-  if (!hovered && frameCount % 100 === 0) {
-    prevCoachMarkControl = control;
-    nextCoachMark();
-  }
-}
-
-function disableCouchMarks() {
-  coachMarkIndex = -1;
-}
-
-function nextCoachMark() {
-  coachMarkIndex = (coachMarkIndex + 1) % controls.length;
 }
 
 function updateCanvasMapping(xs) {
