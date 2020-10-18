@@ -13,7 +13,11 @@ function drawCoachMarks() {
     const hovered = controls.find((control) => control.containsMouse());
     currentCoachMark = coachMarkIndex >= 0 ? controls[coachMarkIndex] : null;
     const control = hovered || currentCoachMark;
-    if (hovered) { animationStartPos = animationPrevPos = null; }
+    if (hovered) {
+        animationStartPos = null;
+        animationPrevPos = null;
+        animationStartTime = frameCount;
+    }
     if (!control) return;
 
     push();
@@ -29,19 +33,20 @@ function drawCoachMarks() {
         x -= 10
     }
 
-    fill(coachMarkTextColor);
+    const s = hovered ? 1 : min((((frameCount - animationStartTime) / COACHMARK_ANIMATION_MS) * 10) ** 2, 1);
+    const [r, g, b] = color(coachMarkTextColor).levels;
+    const animatedColor = color(r, g, b, s * 255);
+    fill(animatedColor);
     text(label, x, control.y - 58);
 
     noFill();
     {
         let { x, y } = control;
         if (animationStartPos) {
-            const s = min((((frameCount - animationStartTime) / COACHMARK_ANIMATION_MS) * 5) ** 2, 1);
             x = lerp(animationStartPos.x, x, s);
             y = lerp(animationStartPos.y, y, s);
         }
         if (animationPrevPos) {
-            const [r, g, b] = color(coachMarkTextColor).levels;
             const stepSize = 1 / max(abs(x - animationPrevPos.x), abs(y - animationPrevPos.y));
             for (let t = 0; t < 1; t += stepSize) {
                 stroke(r, g, b, t * 255);
@@ -57,13 +62,12 @@ function drawCoachMarks() {
     fill(BG_COLOR);
     noStroke();
     rect(control.x - m, control.y - 70 - m, 2 * m, 60 + m);
-    stroke(coachMarkTextColor);
+    stroke(animatedColor);
     line(control.x, control.y - 70, control.x, control.y - 10)
 
     if (!hovered && frameCount % COACHMARK_ANIMATION_MS === 0) {
         animationStartTime = frameCount;
         animationStartPos = { x: control.x, y: control.y };
-        // animationPrevPos = null;
         nextCoachMark();
     }
     pop();
