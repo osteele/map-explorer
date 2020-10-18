@@ -4,12 +4,19 @@ let coachMarkIndex = 0;
 let prevCoachMarkControl = null;
 let currentCoachMark = null;
 
+const COACHMARK_ANIMATION_MS = 100;
+let animationPrevPos = null;
+let animationStartPos = null;
+let animationStartTime = 0;
+
 function drawCoachMarks() {
     const hovered = controls.find((control) => control.containsMouse());
-    const control = hovered || (coachMarkIndex >= 0 && controls[coachMarkIndex]);
-    if (hovered) { prevCoachMarkControl = null; }
+    currentCoachMark = coachMarkIndex >= 0 ? controls[coachMarkIndex] : null;
+    const control = hovered || currentCoachMark;
+    if (hovered) { animationStartPos = animationPrevPos = null; }
     if (!control) return;
 
+    push();
     textAlign(LEFT);
     textFont("Times");
     textSize(18);
@@ -26,23 +33,40 @@ function drawCoachMarks() {
     text(label, x, control.y - 58);
 
     noFill();
-    stroke(coachMarkTextColor);
     {
         let { x, y } = control;
-        if (prevCoachMarkControl) {
-            const s = min(((frameCount % 100) / 10) ** 2, 1);
-            x = lerp(prevCoachMarkControl.x, x, s);
-            y = lerp(prevCoachMarkControl.y, y, s);
+        if (animationStartPos) {
+            const s = min((((frameCount - animationStartTime) / COACHMARK_ANIMATION_MS) * 5) ** 2, 1);
+            x = lerp(animationStartPos.x, x, s);
+            y = lerp(animationStartPos.y, y, s);
         }
+        if (animationPrevPos) {
+            const [r, g, b] = color(coachMarkTextColor).levels;
+            const stepSize = 1 / max(abs(x - animationPrevPos.x), abs(y - animationPrevPos.y));
+            for (let t = 0; t < 1; t += stepSize) {
+                stroke(r, g, b, t * 255);
+                circle(lerp(animationPrevPos.x, x, t), lerp(animationPrevPos.y, y, t), 25);
+            }
+        }
+        stroke(coachMarkTextColor);
         circle(x, y, 25);
+        animationPrevPos = { x, y };
     }
 
+    const m = 2;
+    fill(BG_COLOR);
+    noStroke();
+    rect(control.x - m, control.y - 70 - m, 2 * m, 60 + m);
+    stroke(coachMarkTextColor);
     line(control.x, control.y - 70, control.x, control.y - 10)
 
-    if (!hovered && frameCount % 100 === 0) {
-        prevCoachMarkControl = control;
+    if (!hovered && frameCount % COACHMARK_ANIMATION_MS === 0) {
+        animationStartTime = frameCount;
+        animationStartPos = { x: control.x, y: control.y };
+        // animationPrevPos = null;
         nextCoachMark();
     }
+    pop();
 }
 
 function disableCouchMarks() {
