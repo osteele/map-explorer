@@ -16,7 +16,7 @@ function drawCoachMarks() {
 
     const label = `Drag this circle to change\nthe ${control.label} value`;
     const w = max(label.split("\n").map((s) => textWidth(s)));
-    let x = control.x - translation.x + 15;
+    let x = control.x - OFFSET.x + 15;
     if (x + w > width - 20) {
         textAlign(RIGHT);
         x -= 10
