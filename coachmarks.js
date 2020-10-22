@@ -1,5 +1,6 @@
-const coachMarkTextColor = "#dcc";
+const COACH_MARK_TEXT_COLOR = "#dcc";
 
+let nextCoachMarkFrameCount = 200;
 let coachMarkIndex = 0;
 let prevCoachMarkControl = null;
 let currentCoachMark = null;
@@ -11,12 +12,13 @@ let animationStartTime = 0;
 
 function drawCoachMarks() {
     const hovered = controls.find((control) => control.containsMouse());
-    currentCoachMark = coachMarkIndex >= 0 ? controls[coachMarkIndex] : null;
+    currentCoachMark = frameCount > nextCoachMarkFrameCount && coachMarkIndex >= 0 ? controls[coachMarkIndex] : null;
     const control = hovered || currentCoachMark;
     if (hovered) {
         animationStartPos = null;
         animationPrevPos = null;
-        animationStartTime = frameCount;
+        nextCoachMarkFrameCount = frameCount + 200;
+        animationStartTime = nextCoachMarkFrameCount;
     }
     if (!control) return;
 
@@ -25,7 +27,7 @@ function drawCoachMarks() {
     textFont("Times");
     textSize(18);
 
-    const label = `Drag this circle to change\nthe ${control.label} value`;
+    const label = `Drag this circle to modify\nthe ${control.label} value`;
     const w = max(label.split("\n").map((s) => textWidth(s)));
     let x = control.x - OFFSET.x + 15;
     if (x + w > width - 20) {
@@ -34,7 +36,7 @@ function drawCoachMarks() {
     }
 
     const s = hovered ? 1 : min((((frameCount - animationStartTime) / COACHMARK_ANIMATION_MS) * 10) ** 2, 1);
-    const [r, g, b] = color(coachMarkTextColor).levels;
+    const [r, g, b] = color(COACH_MARK_TEXT_COLOR).levels;
     const animatedColor = color(r, g, b, s * 255);
     fill(animatedColor);
     text(label, x, control.y - 58);
@@ -53,7 +55,7 @@ function drawCoachMarks() {
                 circle(lerp(animationPrevPos.x, x, t), lerp(animationPrevPos.y, y, t), 25);
             }
         }
-        stroke(coachMarkTextColor);
+        stroke(COACH_MARK_TEXT_COLOR);
         circle(x, y, 25);
         animationPrevPos = { x, y };
     }
