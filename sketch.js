@@ -1,11 +1,15 @@
 // Layout
 const OFFSET = { x: 10, y: 100 };
 
+const WINDOW_IS_SHORT = window.innerHeight < 750;
+console.info('WINDOW_IS_SHORT', window.innerHeight, WINDOW_IS_SHORT)
+
 const CODELINE_1Y = 40;
 const CODELINE_2Y = 82;
-const INPUT_RANGE_Y = 200;
-const OUTPUT_RANGE_Y = 420;
-const OUTPUT_LABEL_Y = 500;
+const INPUT_RANGE_Y = WINDOW_IS_SHORT ? 170 : 200;
+const OUTPUT_RANGE_Y = WINDOW_IS_SHORT ? 280 : 420;
+const OUTPUT_LABEL_Y = WINDOW_IS_SHORT ? OUTPUT_RANGE_Y - 40 : OUTPUT_RANGE_Y + 80;
+const OUTPUT_LABEL_LINE_Y = WINDOW_IS_SHORT ? OUTPUT_LABEL_Y + 1 : OUTPUT_LABEL_Y - 30;
 
 const BG_COLOR = "#343741";
 const IN_RANGE_COLOR = "#8ca7f8";
@@ -231,7 +235,7 @@ function draw() {
   fill(OUT_VALUE_COLOR);
   stroke(OUT_VALUE_COLOR);
   strokeWeight(2);
-  line(toCanvasX(y), OUTPUT_RANGE_Y, toCanvasX(y), OUTPUT_LABEL_Y - 30);
+  line(toCanvasX(y), OUTPUT_RANGE_Y, toCanvasX(y), OUTPUT_LABEL_LINE_Y);
   textSize(30);
   text(formatNumber(y), toCanvasX(y), OUTPUT_LABEL_Y);
 
