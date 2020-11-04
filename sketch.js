@@ -39,15 +39,6 @@ const frameworks = {
 };
 let frameworkName = P5JS_FRAMEWORK;
 
-const referenceUrls = [
-  [
-    "https://www.arduino.cc/reference/en/language/functions/math/map/",
-    "Arduino reference",
-  ],
-  ["https://processing.org/reference/map_.html", "Processing reference"],
-  ["https://p5js.org/reference/#/p5/map", "p5.js reference"],
-];
-
 // Convert between program values and canvas X values.
 // This doesn't use `scale` and `translate`, because we only want
 // to transform the x positions, not the widths of text and shapes.
@@ -61,7 +52,6 @@ const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
   const headerHeight = document.getElementById("header").offsetHeight;
-  console.info(headerHeight, "headerHeight")
   createCanvas(windowWidth - 20, windowHeight - 80 - headerHeight);
   createControllers();
   createFrameworkSelector();
@@ -73,10 +63,7 @@ function setup() {
     .attribute("title", "Clamp the output between low and high");
 
   createPresets();
-  createReferenceLinks(headerHeight + height - 0);
-  createA("https://github.com/osteele/map-explorer", "Edit on GitHub")
-    .position(width - 110, headerHeight + height + 40)
-    .style('color', 'gray')
+  createFooter(headerHeight + height);
 }
 
 function createFrameworkSelector() {
@@ -111,15 +98,6 @@ function createControllers() {
     OUT_RANGE_COLOR,
     "output high"
   );
-}
-
-function createReferenceLinks(y) {
-  for (let [href, title] of referenceUrls) {
-    createA(href, title, "map-reference")
-      .position(20, y)
-      .style("color", "gray");
-    y += 20;
-  }
 }
 
 function createPresets() {
