@@ -60,7 +60,9 @@ const fromCanvasX = (xAdd) => (mouseX - xAdd) / xScale;
 const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
-  createCanvas(windowWidth, windowHeight - 40);
+  const headerHeight = document.getElementById("header").offsetHeight;
+  console.info(headerHeight, "headerHeight")
+  createCanvas(windowWidth - 20, windowHeight - 80 - headerHeight);
   createControllers();
   createFrameworkSelector();
 
@@ -71,9 +73,9 @@ function setup() {
     .attribute("title", "Clamp the output between low and high");
 
   createPresets();
-  createReferenceLinks();
+  createReferenceLinks(headerHeight + height - 0);
   createA("https://github.com/osteele/map-explorer", "Edit on GitHub")
-    .position(width - 140, height - 30)
+    .position(width - 110, headerHeight + height + 40)
     .style('color', 'gray')
 }
 
@@ -111,8 +113,7 @@ function createControllers() {
   );
 }
 
-function createReferenceLinks() {
-  let y = height - 70;
+function createReferenceLinks(y) {
   for (let [href, title] of referenceUrls) {
     createA(href, title, "map-reference")
       .position(20, y)
