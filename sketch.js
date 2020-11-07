@@ -124,32 +124,26 @@ function draw() {
   textSize(30);
   textFont("Courier");
   fill("#ccc");
-  const codeSpans = [
-    `${declarator} output = map(`,
-    `input, `,
-    `${formatNumber(inLow)}, ${formatNumber(inHigh)}`,
+  styledText([
+    `${declarator} `,
+    { text: "input", fill: IN_VALUE_COLOR },
+    ` = ${formatNumber(x)};`,
+  ], 10, layout.codeline1y)
+  const codeSpans = styledText([
+    `${declarator} `,
+    { text: "output", fill: OUT_VALUE_COLOR },
+    " = map(",
+    { text: "input", fill: IN_VALUE_COLOR, label: "inValue" },
     ", ",
-    `${formatNumber(outLow)}, ${formatNumber(outHigh)}`,
-    (clamp ? ", true" : "") + ");",
-  ];
-  const codeSpanWidths = codeSpans.map((s) => textWidth(s));
-  const inValueLeft = codeSpanWidths[0] + 10;
-  const inValueWidth = codeSpanWidths[1];
-  const inTextLeft = inValueLeft + codeSpanWidths[1];
-  const inTextRight = inTextLeft + codeSpanWidths[2];
-  const outTextLeft = inTextRight + codeSpanWidths[3];
-  const outTextRight = outTextLeft + codeSpanWidths[4];
-  text(`${declarator} input = ${formatNumber(x)};`, 10, layout.codeline1y);
-  text(codeSpans.join(""), 10, layout.codeline2y);
-  fill(OUT_VALUE_COLOR);
-  text("output", 10 + textWidth(`${declarator} `), layout.codeline2y);
-  fill(IN_VALUE_COLOR);
-  text("input", 10 + textWidth(`${declarator} `), layout.codeline1y);
-  text("input", inValueLeft, layout.codeline2y);
-  fill(IN_RANGE_COLOR);
-  text(codeSpans[2], inTextLeft, layout.codeline2y);
-  fill(OUT_RANGE_COLOR);
-  text(codeSpans[4], outTextLeft, layout.codeline2y);
+    { text: `${formatNumber(inLow)}, ${formatNumber(inHigh)}`, fill: IN_RANGE_COLOR, label: "inText" },
+    ", ",
+    { text: `${formatNumber(outLow)}, ${formatNumber(outHigh)}`, fill: OUT_RANGE_COLOR, label: "outText" },
+    (clamp ? ", true" : ""),
+    ");",
+  ], 10, layout.codeline2y);
+  const [inValueLeft, inValueWidth] = codeSpans.inValue;
+  const [inTextLeft, inTextRight] = codeSpans.inText;
+  const [outTextLeft, outTextRight] = codeSpans.outText;
 
   textAlign(CENTER);
 
@@ -217,6 +211,22 @@ function draw() {
   }
 
   pop();
+}
+
+function styledText(segments, x, y) {
+  const isString = s => Object.prototype.toString.call(s) === "[object String]";
+  const spans = segments.map(s => isString(s) ? { text: s } : s);
+  const results = {};
+  for (let span of spans) {
+    push();
+    if (span.fill) fill(span.fill);
+    text(span.text, x, y);
+    const width = textWidth(span.text);
+    if (span.label) results[span.label] = [x, x + width];
+    x += width;
+    pop();
+  }
+  return results;
 }
 
 function updateCanvasMapping(xs) {
