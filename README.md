@@ -2,6 +2,16 @@
 
 An interactive visualization of the Arduino / Processing / p5.js `map` function.
 
+![Screenshot](docs/screenshot.png)
+
+## Instructions
+
+Drag the circles to control the input value, and the input and output ranges.
+
+## Related
+
+Also see the [PWM Explorer](http://osteele.github.io/pwm-explorer/), for exploring Pulse Width Modulation.
+
 ## References
 
 - [Arduino reference](https://www.arduino.cc/reference/en/language/functions/math/map/),
