@@ -1,8 +1,7 @@
 // Layout
-const OFFSET = { x: 10, y: 100 };
+const OFFSET = { x: 10, y: 100 }; // from top left of canvas
 
 const WINDOW_IS_SHORT = window.innerHeight < 750;
-console.info('WINDOW_IS_SHORT', window.innerHeight, WINDOW_IS_SHORT)
 
 const CODELINE_1Y = 40;
 const CODELINE_2Y = 82;
@@ -35,14 +34,6 @@ const presets = [
   [0, 1023, 255, 0],
 ];
 
-const P5JS_FRAMEWORK = "p5.js";
-const frameworks = {
-  Arduino: { varDef: "int" },
-  Processing: { varDef: "float" },
-  [P5JS_FRAMEWORK]: { varDef: "let", hasClamp: true },
-};
-let frameworkName = P5JS_FRAMEWORK;
-
 // Convert between program values and canvas X values.
 // This doesn't use `scale` and `translate`, because we only want
 // to transform the x positions, not the widths of text and shapes.
@@ -68,22 +59,6 @@ function setup() {
 
   createPresets();
   createFooter(headerHeight + height);
-}
-
-function createFrameworkSelector() {
-  createDiv("Framework")
-    .position(20, OFFSET.y)
-    .style("color", "white")
-    .style("font-size", "26px");
-  let frameworkSel = createSelect().position(20, OFFSET.y + 40);
-  Object.keys(frameworks).forEach((s) => frameworkSel.option(s));
-  frameworkSel.selected(P5JS_FRAMEWORK);
-  frameworkSel.changed(() => {
-    frameworkName = frameworkSel.value();
-    let { hasClamp } = frameworks[frameworkName];
-    if (hasClamp) clampCheckbox.show();
-    else clampCheckbox.hide();
-  });
 }
 
 function createControllers() {
@@ -136,7 +111,7 @@ function createPresets() {
 function draw() {
   background(BG_COLOR);
 
-  const { varDef: declarator, hasClamp } = frameworks[frameworkName];
+  const { varDef: declarator, hasClamp } = framework.options;
   const clamp = Boolean(hasClamp && clampCheckbox.checked());
   const toTargetType = declarator === "int" ? floor : (x) => x;
 
