@@ -50,6 +50,20 @@ function setup() {
   createFooter(headerHeight + height);
 }
 
+// let resizeCanvasTimer = null;
+
+// function windowResized() {
+//   if (resizeCanvasTimer) clearTimeout(resizeCanvasTimer);
+//   resizeCanvasTimer = setTimeout(resizer, 1000);
+//   function resizer() {
+//     resizeCanvasTimer = null;
+//     calculateLayout();
+//     const headerHeight = document.getElementById("header").offsetHeight;
+//     resizeCanvas(windowWidth - 20, windowHeight - 80 - headerHeight);
+//     loop();
+//   }
+// }
+
 function createControllers() {
   inLowControl = new Controller(10, layout.inputRangeY, IN_RANGE_COLOR, "input low");
   inHighControl = new Controller(40, layout.inputRangeY, IN_RANGE_COLOR, "input high");
