@@ -10,13 +10,15 @@ const referenceUrls = [
 function createFooter(top) {
     createReferenceLinks(top);
     createA("https://github.com/osteele/map-explorer", "Edit on GitHub")
+        .class("delete-on-resize")
         .position(width - 110, top + 40)
-        .style('color', 'gray')
+        .style("color", 'gray')
 }
 
 function createReferenceLinks(y) {
     for (let [href, title] of referenceUrls) {
         createA(href, title, "map-reference")
+            .class("delete-on-resize")
             .position(20, y)
             .style("color", "gray");
         y += 20;

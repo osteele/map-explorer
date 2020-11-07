@@ -34,9 +34,9 @@ const fromCanvasX = (xAdd) => (mouseX - xAdd) / xScale;
 const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
-  calculateLayout();
   const headerHeight = document.getElementById("header").offsetHeight;
-  createCanvas(windowWidth - 20, windowHeight - 80 - headerHeight);
+  createCanvas(windowWidth - 20, max(MIN_WINDOW_HEIGHT, windowHeight - 80 - headerHeight));
+  calculateLayout();
   createControllers();
   createFrameworkSelector();
 
@@ -50,19 +50,27 @@ function setup() {
   createFooter(headerHeight + height);
 }
 
-// let resizeCanvasTimer = null;
+function resize() {
+  // TODO DRY w/ setup()
+  const headerHeight = document.getElementById("header").offsetHeight;
+  resizeCanvas(windowWidth - 20, max(MIN_WINDOW_HEIGHT, windowHeight - 80 - headerHeight));
+  calculateLayout();
+  [...document.getElementsByClassName("delete-on-resize")].map(e => e.parentElement.removeChild(e));
+  resizeControllers();
+  createFooter(headerHeight + height);
+  loop();
+}
 
-// function windowResized() {
-//   if (resizeCanvasTimer) clearTimeout(resizeCanvasTimer);
-//   resizeCanvasTimer = setTimeout(resizer, 1000);
-//   function resizer() {
-//     resizeCanvasTimer = null;
-//     calculateLayout();
-//     const headerHeight = document.getElementById("header").offsetHeight;
-//     resizeCanvas(windowWidth - 20, windowHeight - 80 - headerHeight);
-//     loop();
-//   }
-// }
+let resizeCanvasTimer = null;
+
+function windowResized() {
+  if (resizeCanvasTimer) clearTimeout(resizeCanvasTimer);
+  resizeCanvasTimer = setTimeout(resizer, 100);
+  function resizer() {
+    resizeCanvasTimer = null;
+    resize();
+  }
+}
 
 function createControllers() {
   inLowControl = new Controller(10, layout.inputRangeY, IN_RANGE_COLOR, "input low");
@@ -80,6 +88,14 @@ function createControllers() {
     OUT_RANGE_COLOR,
     "output high"
   );
+}
+
+function resizeControllers() {
+  inLowControl.y = layout.inputRangeY;
+  inHighControl.y = layout.inputRangeY;
+  inputControl.y = layout.inputRangeY;
+  outLowControl.y = layout.outputRangeY;
+  outHighControl.y = layout.outputRangeY;
 }
 
 function createPresets() {
