@@ -3,12 +3,21 @@ const OFFSET = { x: 10, y: 100 }; // from top left of canvas
 
 const WINDOW_IS_SHORT = window.innerHeight < 750;
 
-const CODELINE_1Y = 40;
-const CODELINE_2Y = 82;
-const INPUT_RANGE_Y = WINDOW_IS_SHORT ? 170 : 200;
-const OUTPUT_RANGE_Y = WINDOW_IS_SHORT ? 280 : 420;
-const OUTPUT_LABEL_Y = WINDOW_IS_SHORT ? OUTPUT_RANGE_Y - 40 : OUTPUT_RANGE_Y + 80;
-const OUTPUT_LABEL_LINE_Y = WINDOW_IS_SHORT ? OUTPUT_LABEL_Y + 1 : OUTPUT_LABEL_Y - 30;
+const _CODELINE_1Y = 40;
+const _CODELINE_2Y = 82;
+const _INPUT_RANGE_Y = WINDOW_IS_SHORT ? 170 : 200;
+const _OUTPUT_RANGE_Y = WINDOW_IS_SHORT ? 280 : 420;
+const _OUTPUT_LABEL_Y = WINDOW_IS_SHORT ? _OUTPUT_RANGE_Y - 40 : _OUTPUT_RANGE_Y + 80;
+const _OUTPUT_LABEL_LINE_Y = WINDOW_IS_SHORT ? _OUTPUT_LABEL_Y + 1 : _OUTPUT_LABEL_Y - 30;
+
+const layout = {
+  codeline_1Y: _CODELINE_1Y,
+  codeline_2Y: _CODELINE_2Y,
+  inputRangeY: _INPUT_RANGE_Y,
+  outputRangeY: _OUTPUT_RANGE_Y,
+  outputLabelY: _OUTPUT_LABEL_Y,
+  outputLabelLineY: _OUTPUT_LABEL_LINE_Y,
+}
 
 const BG_COLOR = "#343741";
 const IN_RANGE_COLOR = "#8ca7f8";
@@ -62,18 +71,18 @@ function setup() {
 }
 
 function createControllers() {
-  inLowControl = new Controller(10, INPUT_RANGE_Y, IN_RANGE_COLOR, "input low");
-  inHighControl = new Controller(40, INPUT_RANGE_Y, IN_RANGE_COLOR, "input high");
-  inputControl = new Controller(15, INPUT_RANGE_Y, IN_VALUE_COLOR, "input");
+  inLowControl = new Controller(10, layout.inputRangeY, IN_RANGE_COLOR, "input low");
+  inHighControl = new Controller(40, layout.inputRangeY, IN_RANGE_COLOR, "input high");
+  inputControl = new Controller(15, layout.inputRangeY, IN_VALUE_COLOR, "input");
   outLowControl = new Controller(
     100,
-    OUTPUT_RANGE_Y,
+    layout.outputRangeY,
     OUT_RANGE_COLOR,
     "output low"
   );
   outHighControl = new Controller(
     200,
-    OUTPUT_RANGE_Y,
+    layout.outputRangeY,
     OUT_RANGE_COLOR,
     "output high"
   );
@@ -150,17 +159,17 @@ function draw() {
   const inTextRight = inTextLeft + codeSpanWidths[2];
   const outTextLeft = inTextRight + codeSpanWidths[3];
   const outTextRight = outTextLeft + codeSpanWidths[4];
-  text(`${declarator} input = ${formatNumber(x)};`, 10, CODELINE_1Y);
-  text(codeSpans.join(""), 10, CODELINE_2Y);
+  text(`${declarator} input = ${formatNumber(x)};`, 10, layout.codeline_1Y);
+  text(codeSpans.join(""), 10, layout.codeline_2Y);
   fill(OUT_VALUE_COLOR);
-  text("output", 10 + textWidth(`${declarator} `), CODELINE_2Y);
+  text("output", 10 + textWidth(`${declarator} `), layout.codeline_2Y);
   fill(IN_VALUE_COLOR);
-  text("input", 10 + textWidth(`${declarator} `), CODELINE_1Y);
-  text("input", inValueLeft, CODELINE_2Y);
+  text("input", 10 + textWidth(`${declarator} `), layout.codeline_1Y);
+  text("input", inValueLeft, layout.codeline_2Y);
   fill(IN_RANGE_COLOR);
-  text(codeSpans[2], inTextLeft, CODELINE_2Y);
+  text(codeSpans[2], inTextLeft, layout.codeline_2Y);
   fill(OUT_RANGE_COLOR);
-  text(codeSpans[4], outTextLeft, CODELINE_2Y);
+  text(codeSpans[4], outTextLeft, layout.codeline_2Y);
 
   textAlign(CENTER);
 
@@ -170,14 +179,14 @@ function draw() {
   line(inLowControl.x, inLowControl.y, outLowControl.x, outLowControl.y);
   line(inHighControl.x, inHighControl.y, outHighControl.x, outHighControl.y);
   stroke("white");
-  line(toCanvasX(x), INPUT_RANGE_Y, toCanvasX(y), OUTPUT_RANGE_Y);
+  line(toCanvasX(x), layout.inputRangeY, toCanvasX(y), layout.outputRangeY);
 
   // input range lines and labels
   textSize(15);
   stroke(IN_RANGE_COLOR);
   fill(IN_RANGE_COLOR);
   strokeWeight(4);
-  line(inTextLeft, CODELINE_2Y + 10, inTextRight, CODELINE_2Y + 10);
+  line(inTextLeft, layout.codeline_2Y + 10, inTextRight, layout.codeline_2Y + 10);
   strokeWeight(8);
   line(inLowControl.x, inLowControl.y, inHighControl.x, inHighControl.y);
   strokeWeight(0);
@@ -189,16 +198,16 @@ function draw() {
   strokeWeight(2);
   line(
     inValueLeft + inValueWidth / 2 - 10,
-    CODELINE_2Y + 10,
+    layout.codeline_2Y + 10,
     toCanvasX(x),
-    INPUT_RANGE_Y
+    layout.inputRangeY
   );
 
   // output range lines and labels
   stroke(OUT_RANGE_COLOR);
   fill(OUT_RANGE_COLOR);
   strokeWeight(4);
-  line(outTextLeft, CODELINE_2Y + 10, outTextRight, CODELINE_2Y + 10);
+  line(outTextLeft, layout.codeline_2Y + 10, outTextRight, layout.codeline_2Y + 10);
   strokeWeight(8);
   strokeCap(SQUARE);
   line(outLowControl.x, outLowControl.y, outHighControl.x, outHighControl.y);
@@ -210,9 +219,9 @@ function draw() {
   fill(OUT_VALUE_COLOR);
   stroke(OUT_VALUE_COLOR);
   strokeWeight(2);
-  line(toCanvasX(y), OUTPUT_RANGE_Y, toCanvasX(y), OUTPUT_LABEL_LINE_Y);
+  line(toCanvasX(y), layout.outputRangeY, toCanvasX(y), layout.outputLabelLineY);
   textSize(30);
-  text(formatNumber(y), toCanvasX(y), OUTPUT_LABEL_Y);
+  text(formatNumber(y), toCanvasX(y), layout.outputLabelY);
 
   for (const control of controls) {
     const [r, g, b] = control.color.levels;
