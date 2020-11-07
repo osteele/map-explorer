@@ -1,24 +1,3 @@
-// Layout
-const OFFSET = { x: 10, y: 100 }; // from top left of canvas
-
-const WINDOW_IS_SHORT = window.innerHeight < 750;
-
-const _CODELINE_1Y = 40;
-const _CODELINE_2Y = 82;
-const _INPUT_RANGE_Y = WINDOW_IS_SHORT ? 170 : 200;
-const _OUTPUT_RANGE_Y = WINDOW_IS_SHORT ? 280 : 420;
-const _OUTPUT_LABEL_Y = WINDOW_IS_SHORT ? _OUTPUT_RANGE_Y - 40 : _OUTPUT_RANGE_Y + 80;
-const _OUTPUT_LABEL_LINE_Y = WINDOW_IS_SHORT ? _OUTPUT_LABEL_Y + 1 : _OUTPUT_LABEL_Y - 30;
-
-const layout = {
-  codeline_1Y: _CODELINE_1Y,
-  codeline_2Y: _CODELINE_2Y,
-  inputRangeY: _INPUT_RANGE_Y,
-  outputRangeY: _OUTPUT_RANGE_Y,
-  outputLabelY: _OUTPUT_LABEL_Y,
-  outputLabelLineY: _OUTPUT_LABEL_LINE_Y,
-}
-
 const BG_COLOR = "#343741";
 const IN_RANGE_COLOR = "#8ca7f8";
 const IN_VALUE_COLOR = "#B79CB6"; // lerpColor(color("#875A86"), color("white"), 0.4)
@@ -55,6 +34,7 @@ const fromCanvasX = (xAdd) => (mouseX - xAdd) / xScale;
 const formatNumber = (n) => String(n).replace(/(\.\d{2})\d+/, "$1");
 
 function setup() {
+  calculateLayout();
   const headerHeight = document.getElementById("header").offsetHeight;
   createCanvas(windowWidth - 20, windowHeight - 80 - headerHeight);
   createControllers();
@@ -159,17 +139,17 @@ function draw() {
   const inTextRight = inTextLeft + codeSpanWidths[2];
   const outTextLeft = inTextRight + codeSpanWidths[3];
   const outTextRight = outTextLeft + codeSpanWidths[4];
-  text(`${declarator} input = ${formatNumber(x)};`, 10, layout.codeline_1Y);
-  text(codeSpans.join(""), 10, layout.codeline_2Y);
+  text(`${declarator} input = ${formatNumber(x)};`, 10, layout.codeline1y);
+  text(codeSpans.join(""), 10, layout.codeline2y);
   fill(OUT_VALUE_COLOR);
-  text("output", 10 + textWidth(`${declarator} `), layout.codeline_2Y);
+  text("output", 10 + textWidth(`${declarator} `), layout.codeline2y);
   fill(IN_VALUE_COLOR);
-  text("input", 10 + textWidth(`${declarator} `), layout.codeline_1Y);
-  text("input", inValueLeft, layout.codeline_2Y);
+  text("input", 10 + textWidth(`${declarator} `), layout.codeline1y);
+  text("input", inValueLeft, layout.codeline2y);
   fill(IN_RANGE_COLOR);
-  text(codeSpans[2], inTextLeft, layout.codeline_2Y);
+  text(codeSpans[2], inTextLeft, layout.codeline2y);
   fill(OUT_RANGE_COLOR);
-  text(codeSpans[4], outTextLeft, layout.codeline_2Y);
+  text(codeSpans[4], outTextLeft, layout.codeline2y);
 
   textAlign(CENTER);
 
@@ -186,7 +166,7 @@ function draw() {
   stroke(IN_RANGE_COLOR);
   fill(IN_RANGE_COLOR);
   strokeWeight(4);
-  line(inTextLeft, layout.codeline_2Y + 10, inTextRight, layout.codeline_2Y + 10);
+  line(inTextLeft, layout.codeline2y + 10, inTextRight, layout.codeline2y + 10);
   strokeWeight(8);
   line(inLowControl.x, inLowControl.y, inHighControl.x, inHighControl.y);
   strokeWeight(0);
@@ -198,16 +178,16 @@ function draw() {
   strokeWeight(2);
   line(
     inValueLeft + inValueWidth / 2 - 10,
-    layout.codeline_2Y + 10,
+    layout.codeline2y + 10,
     toCanvasX(x),
-    layout.inputRangeY
+    layout.INPUT_RANGE_Y
   );
 
   // output range lines and labels
   stroke(OUT_RANGE_COLOR);
   fill(OUT_RANGE_COLOR);
   strokeWeight(4);
-  line(outTextLeft, layout.codeline_2Y + 10, outTextRight, layout.codeline_2Y + 10);
+  line(outTextLeft, layout.codeline2y + 10, outTextRight, layout.codeline2y + 10);
   strokeWeight(8);
   strokeCap(SQUARE);
   line(outLowControl.x, outLowControl.y, outHighControl.x, outHighControl.y);
